@@ -1,0 +1,175 @@
+SELECT v1.review_content, v1.overall_number
+FROM vector AS v1
+WHERE v1.overall_number >= 4
+AND SEARCH(v1,
+   {
+      "query": { "match_none": {} },
+      "knn": [
+         {
+            "field": "Review_Vector",
+            "vector": [ADD VECTOR HERE],
+            "k": 3
+         }
+      ]
+   });
+
+
+UPDATE `Engagements`.`_default`.commitment
+SET promoTypology = 'COLLECTION', META().expiration = META().expiration
+WHERE _doc_type = 'commitment'
+AND SUBSTR(requirementGroupCode, 7, 2) = '48';
+
+SELECT COUNT(DISTINCT assetId) AS uniqueAssetCount FROM (
+ SELECT
+   assetId,
+   MILLIS_TO_STR(originalTime) AS originalTime ,
+   weight,
+   velocity,
+   CASE
+     WHEN
+       LAG(sensorStatus) OVER (PARTITION BY assetId ORDER BY originalTime) = sensorStatus
+     THEN 'SAME_AS_PREVIOUS'
+     ELSE 'DIFFERENT_FROM_PREVIOUS'
+   END AS sensorStatusComparison,
+   weight - LAG(weight) OVER (PARTITION BY assetId ORDER BY originalTime) AS weightDifferenceFromPrevious,
+   LEAD(weight) OVER (PARTITION BY assetId ORDER BY originalTime) - weight AS weightDifference,
+   (originalTime - LAG(originalTime) OVER (PARTITION BY assetId ORDER BY originalTime)) / 60000 AS timeDifferenceMinutesPrevious,
+   (LEAD(originalTime) OVER (PARTITION BY assetId ORDER BY originalTime) - originalTime) / 60000 AS timeDifferenceMinutes,
+   CASE sensorStatus
+     WHEN 1 THEN 'PARKED_ENGINE_ON'
+     WHEN 2 THEN 'PARKED_ENGINE_OFF'
+     WHEN 3 THEN 'MOVING'
+     WHEN 4 THEN 'DEVICE_NOT_WORKING'
+     WHEN 5 THEN 'TAMPER_WEIGHT'
+     WHEN 6 THEN 'ACCIDENT'
+     WHEN 7 THEN 'TRACKING_COMPANY_DISCONNECTED'
+     WHEN 8 THEN 'DEVICE_NO_SIGNAL'
+     WHEN 9 THEN 'ENGINE_ON'
+     WHEN 10 THEN 'ENGINE_OFF'
+     WHEN 11 THEN 'MOVING_DEVICE_DISCONNECTED'
+     WHEN 12 THEN 'PARKED_DEVICE_DISCONNECTED'
+     ELSE 'UNKNOWN_STATUS'
+   END AS sensorStatusDescription
+ FROM `wasl`
+ WHERE _type = 'ReadingHistory'
+  AND requestTime BETWEEN 1724212800000 AND 1724271239999
+  AND assetId IS NOT NULL
+ ) AS filtered
+WHERE sensorStatusComparison = 'SAME_AS_PREVIOUS'
+AND sensorStatusDescription = 'MOVING'
+AND timeDifferenceMinutesPrevious < 120;
+
+select value onLine;
+
+create or replace  function point_on_line(pX, pY, startX, startY, endX, endY) {
+ let crossProd = cross_product(pY - startY, pX - startX, endY - startY, endX - startX),
+ dotPro    = dot_product((pX - startX), (pY - startY), (endX - startX), (endY - startY)),
+ squaredLengthBA = ((endX - startX) * (endX - startX) + (endY - startY) * (endY - startY)),
+ onLine = (case abs(crossProd) > 4.94065645841247E-324
+    when true then false
+    else (case dotPro < 0.0
+         when true then false
+         else (case dotPro > squaredLengthBA
+              when true then false
+              else true
+              end)
+         end
+    )
+    end)
+select value onLine
+};
+
+create function default:ControlTower.RulesEngine.test()
+{(
+    select c from [1,2,2,3,3,3,4,4,4,4,5,5,5,5,5] a letting c = count(1)
+)};
+
+execute function default:ControlTower.RulesEngine.test();
+
+UPDATE test_bucket_0.test_scope_1.test_collection_1 SET name = "Max Planck";
+
+CREATE SEQUENCE seq4 IF NOT EXISTS WITH {"start": 10, "increment": -1, "min": 0};
+
+DELETE FROM airport
+WHERE city IN (SELECT raw city FROM `beer-sample` WHERE city IS NOT MISSING)
+RETURNING airportname;
+
+SELECT meta(TMP).id
+FROM `ga_profiles` as TMP
+WHERE NOT EXISTS (
+  SELECT RAW META(GA).id
+  FROM `tempga_profiles` as GA WHERE META(GA).id = META(TMP).id)
+  AND meta(TMP).cas <= 1699077903000000000;
+
+DELETE FROM ga_profiles ga
+USE KEYS (
+SELECT meta(TMP).id
+FROM `ga_profiles` as TMP
+WHERE NOT EXISTS (
+  SELECT RAW META(GA).id
+  FROM `tempga_profiles` as GA WHERE META(GA).id = META(TMP).id)
+  AND meta(TMP).cas <= 1699077903000000000
+)
+RETURNING meta(ga).id;
+
+CREATE INDEX `adv_class` ON `Q5_Complaince_Couchbase_v1`(`_class`) WHERE (`_class` = "com.aldh.compliance.cb.alert.suppression.entity.AlertSuppression");
+
+SELECT meta().id from `Q5_Complaince_Couchbase_v1`.`_default`.`_default` data
+WHERE _class = 'com.moneygram.compliance.cb.alert.suppression.entity.AlertSuppression'
+AND  (REGEXP_CONTAINS (data.keywords, "^[0-9;]*$")
+ OR  data.keywords IS MISSING  OR  data.keywords is null)
+AND  ( (REGEXP_CONTAINS (data.consumerFullName, '.*[a-z].*'))
+   OR (REGEXP_CONTAINS (data.ruleProcessAccountNumber, '.*[a-z].*') )
+   OR (REGEXP_CONTAINS (data.consumerCountryOfBirth, '.*[a-z].*'))
+   OR (REGEXP_CONTAINS (data.consumerPhotoId, '.*[a-z].*'))
+   OR (REGEXP_CONTAINS (data.consumerLegalId, '.*[a-z].*'))
+   );
+
+SELECT cbre.* FROM ( SELECT orderId, MAX(updatedTimestamp) AS updatedTimestamp FROM bkccsh2cb.bkccbrcb.CreditBalanceRefundEvent WHERE updatedTimestamp >= "2024-01-01" GROUP BY orderId) AS latestEvent JOIN bkccsh2cb.bkccbrcb.CreditBalanceRefundEvent AS cbre ON cbre.orderId = latestEvent.orderId AND cbre.updatedTimestamp = latestEvent.updatedTimestamp;
+
+SELECT ro.accountId,
+       ro.cardToken,
+       ro.newCardToken,
+       ro.channel,
+       ro.orderId,
+       ro.orderStatus,
+       ro.partyId,
+       ro.requestedBy,
+       ro.initiatedOnBehalfOfPartyBy,
+       ro.createdOn,
+       ro.orderType,
+       ro.shippingMethod,
+       ro.expeditedShippingFeeAmount,
+       ro.isExpeditedShippingFeeWaived,
+       ro.hasMsrAttestedHighRiskPlusAuthentication,
+       ro.shippingAddress,
+       ro.phoneSession,
+       ro.updatedOn,
+       ro.submittedOn
+FROM (
+    SELECT orderId,
+           MAX(eventTimestamp) AS maxEventTimestamp
+    FROM bkcccmhbkcb.bkcccmspcb.PIReplacementEvent AS partialLatestOrders
+    WHERE partialLatestOrders.accountId = '0002-cCoF9xExCu27ifG8ODWe'
+        AND partialLatestOrders.submittedOn >= '2024-09-08T14:44:24-05:00'
+        AND metadata.sourceState IS NOT NULL GROUP BY orderId) AS latestOrders
+    JOIN bkcccmhbkcb.bkcccmspcb.PIReplacementEvent AS ro ON ro.orderId = latestOrders.orderId
+    AND ro.eventTimestamp = latestOrders.maxEventTimestamp;
+
+SELECT 1 from `test`;
+
+UPDATE my_documents d
+SET d.ids[pos] = "x" FOR pos:v IN d.ids WHEN v = "a" END
+WHERE ANY v IN ids SATISFIES v = "a" END
+RETURNING d.*;
+
+UPDATE my_documents d
+SET i = "x" FOR i IN d.ids WHEN i = "a" END
+RETURNING d.*;
+
+SELECT f.brand_code,f.d_code,f.d_code_details,f.delivered,f.send_phone,f.status,DATE_FORMAT_STR(MILLIS_TO_STR(f.delivered_date), 'YYYY-MM-DD hh:mm:ss') AS delivered_date,COUNT(*) AS count FROM `final_sms` f WHERE f.company_id WITHIN (SELECT META(c).id FROM `company` c WHERE c._class LIKE 'c%') AND DATE_FORMAT_STR(MILLIS_TO_STR(f.delivered_date), 'YYYY-MM-DD hh:mm:ss')>=DATE_TRUNC_STR(DATE_FORMAT_STR(MILLIS_TO_STR(NOW_MILLIS() - 24*60*60*1000), 'YYYY-MM-DD hh:mm:ss'), 'day') AND DATE_FORMAT_STR(MILLIS_TO_STR(f.delivered_date), 'YYYY-MM-DD hh:mm:ss')<DATE_TRUNC_STR(DATE_FORMAT_STR(MILLIS_TO_STR(NOW_MILLIS()), 'YYYY-MM-DD hh:mm:ss'), 'day') GROUP BY f.brand_code,f.d_code,f.d_code_details,f.delivered,f.send_phone,f.status,f.delivered_date;
+
+CREATE INDEX `PIReplacementEvent_accountId_submittedOn_orderId_eventTimestampDESC` ON `bkcccmhbkcb`.`bkcccmspcb`.`PIReplacementEvent`(`accountId`, `submittedOn`, `orderId`, `eventTimestamp` DESC) WITH {  "nodes":[ "prodcouchsc900cldfw.example.com:8091","prodcouchsc901cldfw.example.com:8091","prodcouchsc902cldfw.example.com:8091" ], "num_replica":2 };
+
+CREATE INDEX `PIReplacementEvent_orderId_eventTimestampDESC` ON `bkcccmhbkcb`.`bkcccmspcb`.`PIReplacementEvent`(`orderId`, `eventTimestamp` DESC) WITH {  "defer_build":true, "nodes":[ "prodcouchsc900cldfw.example.com:8091","prodcouchsc901cldfw.example.com:8091","prodcouchsc902cldfw.example.com:8091" ], "num_replica":2 };
+
