@@ -4,14 +4,14 @@ build-backend = "hatchling.build"
 
 
 [project]
-name = "sqlpp-lark_couchbase"
+name = "lark_sqlpp"
 version = "0.0.1"
 authors = [
     { name="Dmitrii Chechetkin", email="dmitrii.chechetkin@couchbase.com" },
 ]
 description = "A package containing lark grammar and parser method for sqlpp"
 readme = "README.md"
-requires-python = ">=3.12.4"
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
@@ -26,13 +26,12 @@ Homepage = "https://github.com/couchbaselabs/sqlpp-lark"
 Issues = "https://github.com/couchbaselabs/sqlpp-lark/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/sqlpp_lark"]
+packages = ["src/lark_sqlpp"]
 
 
 [tool.hatch.envs.test]
 extra-dependencies = [
     "mypy>=1.0.0",
-    "sqlpp_lark"
 ]
 [tool.hatch.envs.test.scripts]
 check = "mypy --install-types --non-interactive {args:src/projectname tests}"
