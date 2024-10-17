@@ -11,7 +11,7 @@ pip install git+ssh://git@github.com/couchbaselabs/lark_sqlpp#egg=lark_sqlpp
 
 ### Example usage
 ```python
-from sqlpp_lark import parse_sqlpp
+from lark_sqlpp import parse_sqlpp
 
 def main():
     parse_sqlpp("SELECT 1")
