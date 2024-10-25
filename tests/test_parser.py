@@ -6,6 +6,9 @@ def test_parser():
     parse_sqlpp(f.read())
 
 def test_exract_collections():
+    tree = parse_sqlpp("UPDATE `travel-sample`.`inventory`.`route` SET id = 321 WHERE id = 320")
+    assert extract_collections(tree) == [['travel-sample', 'inventory', 'route']]
+
     tree = parse_sqlpp("SELECT * from bucket.scope.collection")
     assert extract_collections(tree) == [['bucket', 'scope', 'collection']]
 

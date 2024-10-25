@@ -118,7 +118,7 @@ params: ( identifier_or_star ( "," identifier_or_star )* ) | "..."
 
 body: ( expr | let_clause )*
 
-obj: str
+obj: json_object
 
 create_sequence: "CREATE"i "SEQUENCE"i ( \
     ( sequence if_not_exists? )
@@ -515,7 +515,6 @@ expr: ( \
             | json_value
             | literal
             | named_arg
-            | identifier_ref
             | nested_expr
             | new_array_expr
             | ( LPAREN expr RPAREN )

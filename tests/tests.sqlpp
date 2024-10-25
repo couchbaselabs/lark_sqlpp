@@ -1,3 +1,5 @@
+UPDATE `travel-sample`.`inventory`.`route` SET id = 321 WHERE id = 320;
+
 SELECT v1.review_content, v1.overall_number
 FROM vector AS v1
 WHERE v1.overall_number >= 4
