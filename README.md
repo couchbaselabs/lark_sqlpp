@@ -24,5 +24,5 @@ def main():
     modifies_data(parse_sqlpp("UPDATE test SET x = y"))
 
     # check if sqlpp script modifies structure
-    modifies_structure("CREATE SCOPE test.scope")
+    modifies_structure(parse_sqlpp("CREATE SCOPE test.scope"))
 ```
