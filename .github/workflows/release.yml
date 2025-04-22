@@ -43,10 +43,3 @@ jobs:
           tag_name: v${{ steps.hatch_version_step.outputs.VERSION }} 
           draft: false
           prerelease: false
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/*
-          body: Release v${{ steps.hatch_version_step.outputs.VERSION }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
