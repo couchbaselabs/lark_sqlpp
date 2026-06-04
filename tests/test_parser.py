@@ -40,3 +40,9 @@ def test_modifies_structure():
 
     tree = parse_sqlpp("CREATE SCOPE test.scope IF NOT EXISTS")
     assert modifies_structure(tree) == True
+
+def test_explain():
+    tree = parse_sqlpp("EXPLAIN SELECT * from bucket.scope.collection")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+    assert extract_collections(tree) == [['bucket', 'scope', 'collection']]

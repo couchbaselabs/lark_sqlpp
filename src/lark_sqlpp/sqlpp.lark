@@ -878,7 +878,7 @@ advise_statement: "ADVISE"i "INDEX"i? ( select_statement
     | delete_statement
     | merge_statement )
 
-explain_statement: "INFER"i ( "COLLECTION"i | "KEYSPACE"i )? keyspace_ref ( "WITH"i options )?
+explain_statement: "EXPLAIN"i statement
 
 infer_statement: "INFER"i ( "COLLECTION"i | "KEYSPACE"i )? keyspace_ref ( "WITH"i options )?
 
