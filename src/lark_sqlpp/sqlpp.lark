@@ -518,6 +518,7 @@ expr: ( \
             | nested_expr
             | new_array_expr
             | ( LPAREN expr RPAREN )
+            | exists_expr
             | subquery_expr \
         ) ( \
             comparison_term
@@ -785,15 +786,15 @@ simple_case_expr: "CASE"i expr ( "WHEN"i expr "THEN"i expr )+ ( "ELSE"i expr )? 
 
 searched_case_expr: "CASE"i ( "WHEN"i cond "THEN"i expr)+ ( "ELSE"i expr )? "END"i
 
-collection_expr: exists_expr | in_expr | within_expr | range_cond
+collection_expr: in_expr | within_expr | range_cond
 
 exists_expr: "EXISTS"i expr
 
 in_expr: "NOT"i? "IN"i expr
 
-within_expr: "NOT?" "WITHIN"i expr
+within_expr: "NOT"i? "WITHIN"i expr
 
-range_cond: ( ( "ANY"i | "SOME"i ) ( "AND"i "EVERY"i )? | "EVERY"i ) range_expr "SATISFIES"i cond "END"i
+range_cond: ( ( "ANY"i | "SOME"i ) ( "AND"i "EVERY"i )? | "EVERY"i )? range_expr "SATISFIES"i cond "END"i
 
 range_expr: ( name_var ":" )? var ( "IN"i | "WITHIN"i ) expr \
     ( "," ( name_var ":" )? var ( "IN"i | "WITHIN"i ) expr )*

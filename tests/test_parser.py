@@ -1,3 +1,4 @@
+from exceptiongroup import catch
 from lark_sqlpp import parse_sqlpp, extract_collections, modifies_data, modifies_structure
 
 
@@ -46,3 +47,29 @@ def test_explain():
     assert modifies_data(tree) == False
     assert modifies_structure(tree) == False
     assert extract_collections(tree) == [['bucket', 'scope', 'collection']]
+
+def test_any_within():
+    tree = parse_sqlpp("SELECT h.name, h.city, h.country FROM `travel-sample`.`inventory`.`hotel` h WHERE ANY v WITHIN h.reviews SATISFIES v = 5 END LIMIT 10;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+    assert extract_collections(tree) == [['travel-sample', 'inventory', 'hotel']]
+
+def test_any_in():
+    tree = parse_sqlpp("SELECT any v in [1,2,3] satisfies v > 1 end as result;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+def test_some_in():
+    tree = parse_sqlpp("SELECT some v in [1,2,3] satisfies v > 1 end as result;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+def test_where_within():
+    tree = parse_sqlpp("SELECT * FROM hotel AS t WHERE \"Walton Wolf\" WITHIN t;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+def test_where_exists():
+    tree = parse_sqlpp("SELECT DISTINCT h.city FROM hotel AS h WHERE EXISTS h.reviews;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False

@@ -175,3 +175,17 @@ CREATE INDEX `PIReplacementEvent_accountId_submittedOn_orderId_eventTimestampDES
 
 CREATE INDEX `PIReplacementEvent_orderId_eventTimestampDESC` ON `bkcccmhbkcb`.`bkcccmspcb`.`PIReplacementEvent`(`orderId`, `eventTimestamp` DESC) WITH {  "defer_build":true, "nodes":[ "prodcouchsc900cldfw.example.com:8091","prodcouchsc901cldfw.example.com:8091","prodcouchsc902cldfw.example.com:8091" ], "num_replica":2 };
 
+SELECT h.name, h.city, h.country
+FROM `travel-sample`.`inventory`.`hotel` h
+WHERE ANY v WITHIN h.reviews SATISFIES v = 5 END
+LIMIT 10;
+
+SELECT any v in [1,2,3] satisfies v > 1 end as result;
+
+SELECT some v in [1,2,3] satisfies v > 1 end as result;
+
+SELECT * FROM hotel AS t WHERE "Walton Wolf" WITHIN t;
+
+SELECT DISTINCT h.city
+FROM hotel AS h
+WHERE EXISTS h.reviews;
