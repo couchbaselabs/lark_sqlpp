@@ -73,3 +73,8 @@ def test_where_exists():
     tree = parse_sqlpp("SELECT DISTINCT h.city FROM hotel AS h WHERE EXISTS h.reviews;")
     assert modifies_data(tree) == False
     assert modifies_structure(tree) == False
+
+def test_slice_expr():
+    tree = parse_sqlpp("SELECT h.name, h.public_likes[0:2] AS top_likes FROM hotel AS h WHERE h.public_likes IS NOT MISSING LIMIT 5;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False

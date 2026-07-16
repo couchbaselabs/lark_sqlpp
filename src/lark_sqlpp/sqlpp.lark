@@ -811,7 +811,7 @@ field_expr: "." ( identifier_ref | ( ( escaped_identifier | ( LBRACKET expr RBRA
 
 element_expr: LBRACKET expr RBRACKET
 
-slice_expr: LBRACKET expr ":" expr? RBRACKET
+slice_expr: expr LBRACKET expr ":" expr? RBRACKET
 
 function_call: ( builtin_function
                     | ordinary_function
