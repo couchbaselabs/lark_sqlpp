@@ -266,7 +266,7 @@ projection: ( "ALL"i | "DISTINCT"i )? ( result_expr ( "," result_expr )* | \
 
 result_expr: ( ( path "." )? "*") | expr ( "AS"i? alias )?
 
-path: identifier_ref ( LBRACKET expr RBRACKET )* ( "." identifier_ref ( LBRACKET expr RBRACKET )* )*
+path: (identifier_ref|expr) ( LBRACKET expr RBRACKET )* ( "." identifier_ref ( LBRACKET expr RBRACKET )* )*
 
 from_clause: "FROM"i from_terms
 

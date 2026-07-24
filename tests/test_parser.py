@@ -78,3 +78,8 @@ def test_slice_expr():
     tree = parse_sqlpp("SELECT h.name, h.public_likes[0:2] AS top_likes FROM hotel AS h WHERE h.public_likes IS NOT MISSING LIMIT 5;")
     assert modifies_data(tree) == False
     assert modifies_structure(tree) == False
+
+def test_subquery_paths():
+    tree = parse_sqlpp("SELECT name, (SELECT RAW AVG(s.ratings.Overall) FROM t.reviews AS s)[0] AS avg_rating FROM `travel-sample`.inventory.hotel AS t ORDER BY avg_rating DESC LIMIT 3;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
