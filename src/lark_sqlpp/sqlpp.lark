@@ -3,6 +3,11 @@ start: statement_sequence
 WHITESPACE: (" " | /\t/ | /\n/ | /\r/ )+
 %ignore WHITESPACE
 
+LINE_COMMENT: /--(?!\+)[^\n]*/
+BLOCK_COMMENT: /\/\*(?!\+).*?\*\//s
+%ignore LINE_COMMENT
+%ignore BLOCK_COMMENT
+
 statement_sequence: statement ( ";" statement )* ";"?
 
 statement: dcl_statement
@@ -848,10 +853,6 @@ nthval_from: "FROM"i ( "FIRST"i | "LAST"i )
 nulls_treatment: ( "RESPECT"i | "IGNORE"i ) "NULLS"i
 
 over_clause: "OVER"i ( ( LPAREN window_definition RPAREN ) | window_ref )
-
-comment: block_comment
-
-block_comment: "/*" ( "\r"i )* "*/"
 
 tcl_statement: begin_transaction
     | set_transaction

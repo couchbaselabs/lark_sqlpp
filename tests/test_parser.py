@@ -83,3 +83,20 @@ def test_subquery_paths():
     tree = parse_sqlpp("SELECT name, (SELECT RAW AVG(s.ratings.Overall) FROM t.reviews AS s)[0] AS avg_rating FROM `travel-sample`.inventory.hotel AS t ORDER BY avg_rating DESC LIMIT 3;")
     assert modifies_data(tree) == False
     assert modifies_structure(tree) == False
+
+def test_line_comment():
+    tree = parse_sqlpp("-- top of file comment\nSELECT * FROM bucket.scope.collection")
+    assert extract_collections(tree) == [['bucket', 'scope', 'collection']]
+
+    tree = parse_sqlpp("SELECT * FROM bucket.scope.collection -- trailing comment")
+    assert extract_collections(tree) == [['bucket', 'scope', 'collection']]
+
+def test_block_comment():
+    tree = parse_sqlpp("SELECT /* note */ * FROM bucket.scope.collection")
+    assert extract_collections(tree) == [['bucket', 'scope', 'collection']]
+
+    tree = parse_sqlpp("SELECT * /* spans\nmultiple\nlines */ FROM bucket.scope.collection")
+    assert extract_collections(tree) == [['bucket', 'scope', 'collection']]
+
+    tree = parse_sqlpp("SELECT * FROM bucket.scope.collection /**/")
+    assert extract_collections(tree) == [['bucket', 'scope', 'collection']]
