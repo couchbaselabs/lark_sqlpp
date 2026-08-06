@@ -83,3 +83,36 @@ def test_subquery_paths():
     tree = parse_sqlpp("SELECT name, (SELECT RAW AVG(s.ratings.Overall) FROM t.reviews AS s)[0] AS avg_rating FROM `travel-sample`.inventory.hotel AS t ORDER BY avg_rating DESC LIMIT 3;")
     assert modifies_data(tree) == False
     assert modifies_structure(tree) == False
+
+def test_tcl_statements():
+    tree = parse_sqlpp("BEGIN TRANSACTION")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("START WORK")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SAVEPOINT s1")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("ROLLBACK TRANSACTION TO SAVEPOINT s1")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("ROLLBACK")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("COMMIT")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("COMMIT TRANSACTION")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("BEGIN TRANSACTION; SAVEPOINT s1; ROLLBACK TRANSACTION TO SAVEPOINT s1; COMMIT;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
