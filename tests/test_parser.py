@@ -83,3 +83,44 @@ def test_subquery_paths():
     tree = parse_sqlpp("SELECT name, (SELECT RAW AVG(s.ratings.Overall) FROM t.reviews AS s)[0] AS avg_rating FROM `travel-sample`.inventory.hotel AS t ORDER BY avg_rating DESC LIMIT 3;")
     assert modifies_data(tree) == False
     assert modifies_structure(tree) == False
+
+def test_window_frame_clause():
+    tree = parse_sqlpp("SELECT LAST_VALUE(r.distance) OVER (win ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS longest_distance FROM route r WINDOW win AS (ORDER BY r.id);")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SELECT SUM(x) OVER (ORDER BY y ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) FROM foo;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SELECT SUM(x) OVER (ORDER BY y ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) FROM foo;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SELECT SUM(x) OVER (ORDER BY y ROWS UNBOUNDED PRECEDING) FROM foo;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SELECT SUM(x) OVER (ORDER BY y ROWS CURRENT ROW) FROM foo;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SELECT SUM(x) OVER (ORDER BY y ROWS 3 PRECEDING) FROM foo;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SELECT SUM(x) OVER (ORDER BY y RANGE BETWEEN 1 PRECEDING AND 1 FOLLOWING EXCLUDE CURRENT ROW) FROM foo;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SELECT SUM(x) OVER (ORDER BY y GROUPS BETWEEN 2 PRECEDING AND 2 FOLLOWING) FROM foo;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SELECT SUM(x) OVER (ORDER BY y ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING EXCLUDE NO OTHERS) FROM foo;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SELECT SUM(x) OVER (ORDER BY y ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING EXCLUDE TIES) FROM foo;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
