@@ -12,8 +12,9 @@ statement_sequence: statement ( ";" statement )* ";"?
 
 statement: dcl_statement
 	| ddl_statement
-	| dml_statement 
-	| dql_statement 
+	| dml_statement
+	| dql_statement
+	| tcl_statement
 	| utility_statement
 
 ddl_statement: create_statement
@@ -885,7 +886,8 @@ set_transaction: "SET"i "TRANSACTION"i "ISOLATION"i "LEVEL"i "READ"i "COMMITTED"
 
 savepoint_statement: "SAVEPOINT"i savepointname
 
-rollback_transaction: "ROLLBACK"i ( "WORK"i | "TRAN"i | "TRANSACTION"i )?
+rollback_transaction: "ROLLBACK"i ( "WORK"i | "TRAN"i | "TRANSACTION"i )? \
+    ( "TO"i "SAVEPOINT"i savepointname )?
 
 commit_transaction: "COMMIT"i ( "WORK"i | "TRAN"i | "TRANSACTION"i )?
 

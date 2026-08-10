@@ -84,6 +84,38 @@ def test_subquery_paths():
     assert modifies_data(tree) == False
     assert modifies_structure(tree) == False
 
+def test_tcl_statements():
+    tree = parse_sqlpp("BEGIN TRANSACTION")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("START WORK")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SAVEPOINT s1")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("ROLLBACK TRANSACTION TO SAVEPOINT s1")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("ROLLBACK")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("COMMIT")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("COMMIT TRANSACTION")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("BEGIN TRANSACTION; SAVEPOINT s1; ROLLBACK TRANSACTION TO SAVEPOINT s1; COMMIT;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
 def test_window_frame_clause():
     tree = parse_sqlpp("SELECT LAST_VALUE(r.distance) OVER (win ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS longest_distance FROM route r WINDOW win AS (ORDER BY r.id);")
     assert modifies_data(tree) == False
