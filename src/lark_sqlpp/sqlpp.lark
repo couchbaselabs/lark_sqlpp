@@ -75,9 +75,7 @@ index_order: "ASC"i | "DESC"i
 
 array_expr: full_array_expr | simple_array_expr
 
-full_array_expr: ( "ALL"i | "DISTINCT"i ) "ARRAY"i expr \
-	"FOR"i var ( "IN"i | "WITHIN"i ) expr \
-	( "," var ( "IN"i | "WITHIN"i ) expr )* ("WHEN"i cond)? "END"i \
+full_array_expr: ( "ALL"i | "DISTINCT"i )? array_transform_expr
 
 simple_array_expr: ( "ALL"i | "DISTINCT"i ) expr
 
@@ -524,7 +522,9 @@ expr: ( \
             | new_array_expr
             | ( LPAREN expr RPAREN )
             | exists_expr
-            | subquery_expr \
+            | subquery_expr
+            | collection_transform_expr
+            | sequence_value_expr \
         ) ( \
             comparison_term
             | arithmetic_term
@@ -807,6 +807,18 @@ range_expr: ( name_var ":" )? var ( "IN"i | "WITHIN"i ) expr \
 var: identifier_ref
 
 name_var: identifier_ref
+
+collection_transform_expr: array_transform_expr | first_transform_expr | object_transform_expr
+
+array_transform_expr: "ARRAY"i expr "FOR"i range_expr ( "WHEN"i cond )? "END"i
+
+first_transform_expr: "FIRST"i expr "FOR"i range_expr ( "WHEN"i cond )? "END"i
+
+object_transform_expr: "OBJECT"i expr ":" expr "FOR"i range_expr ( "WHEN"i cond )? "END"i
+
+sequence_value_expr: ( ( "NEXT"i "VALUE"i "FOR"i ) | ( "NEXTVAL"i "FOR"i ) \
+        | ( "PREVIOUS"i "VALUE"i "FOR"i ) | ( "PREV"i "VALUE"i "FOR"i ) | ( "PREVVAL"i "FOR"i ) ) \
+    sequence
 
 new_array_expr: LBRACKET ( expr ( "," expr )* )? RBRACKET
 
