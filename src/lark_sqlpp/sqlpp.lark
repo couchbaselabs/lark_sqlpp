@@ -426,11 +426,17 @@ window_order_clause: "ORDER"i "BY"i ordering_term ( "," ordering_term )*
 window_frame_clause: ( "ROWS"i | "RANGE"i | "GROUPS"i ) window_frame_extent window_frame_exclusion?
 
 window_frame_extent: ( "UNBOUNDED"i "PRECEDING"i )
+	| ( expr "PRECEDING"i )
 	| ( "CURRENT"i "ROW"i )
-	| ( "BETWEEN"i ( ( "UNBOUNDED"i "PRECEDING"i )
-		| ( "CURRENT"i "ROW"i )
-		| ( "PRECEDING"i | "FOLLOWING"i ) \
-	) )
+	| ( "BETWEEN"i window_frame_start "AND"i window_frame_end )
+
+window_frame_start: ( "UNBOUNDED"i "PRECEDING"i )
+	| ( "CURRENT"i "ROW"i )
+	| ( expr ( "PRECEDING"i | "FOLLOWING"i ) )
+
+window_frame_end: ( "UNBOUNDED"i "FOLLOWING"i )
+	| ( "CURRENT"i "ROW"i )
+	| ( expr ( "PRECEDING"i | "FOLLOWING"i ) )
 
 window_frame_exclusion: "EXCLUDE"i ( ( "CURRENT"i "ROW"i ) | "GROUP"i | "TIES"i | ( "NO"i "OTHERS"i ) )
 
