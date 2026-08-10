@@ -124,3 +124,77 @@ def test_window_frame_clause():
     tree = parse_sqlpp("SELECT SUM(x) OVER (ORDER BY y ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING EXCLUDE TIES) FROM foo;")
     assert modifies_data(tree) == False
     assert modifies_structure(tree) == False
+
+def test_line_comment():
+    tree = parse_sqlpp("-- top of file comment\nSELECT * FROM bucket.scope.collection")
+    assert extract_collections(tree) == [['bucket', 'scope', 'collection']]
+
+    tree = parse_sqlpp("SELECT * FROM bucket.scope.collection -- trailing comment")
+    assert extract_collections(tree) == [['bucket', 'scope', 'collection']]
+
+def test_block_comment():
+    tree = parse_sqlpp("SELECT /* note */ * FROM bucket.scope.collection")
+    assert extract_collections(tree) == [['bucket', 'scope', 'collection']]
+
+    tree = parse_sqlpp("SELECT * /* spans\nmultiple\nlines */ FROM bucket.scope.collection")
+    assert extract_collections(tree) == [['bucket', 'scope', 'collection']]
+
+    tree = parse_sqlpp("SELECT * FROM bucket.scope.collection /**/")
+    assert extract_collections(tree) == [['bucket', 'scope', 'collection']]
+
+def test_array_transform_expr():
+    tree = parse_sqlpp("SELECT ARRAY v FOR v IN schedule WHEN v.day = 5 END AS fri_flights FROM route WHERE airline = \"KL\";")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+    assert extract_collections(tree) == [['route']]
+
+    tree = parse_sqlpp("SELECT ARRAY v FOR v IN [1,2,3] END AS result;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+def test_first_transform_expr():
+    tree = parse_sqlpp("SELECT FIRST v FOR v IN schedule WHEN v.utc > \"19:00\" END AS first_flight FROM route;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+    assert extract_collections(tree) == [['route']]
+
+def test_object_transform_expr():
+    tree = parse_sqlpp("SELECT OBJECT \"num_\" || TOSTRING(i):v FOR i:v IN schedule WHEN v.day = 5 END AS fri_flights FROM route;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+    assert extract_collections(tree) == [['route']]
+
+def test_index_with_array_expr():
+    tree = parse_sqlpp("CREATE INDEX idx ON route(DISTINCT ARRAY v FOR v IN schedule END);")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == True
+
+def test_sequence_value_expr():
+    tree = parse_sqlpp("SELECT NEXT VALUE FOR ordNum;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SELECT NEXTVAL FOR ordNum;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SELECT PREVIOUS VALUE FOR ordNum;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SELECT PREV VALUE FOR ordNum;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SELECT PREVVAL FOR ordNum;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("SELECT PREV VALUE FOR bucket.scope.ordNum;")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+
+    tree = parse_sqlpp("INSERT INTO bookings VALUES (UUID(), {\"num\": NEXT VALUE FOR ordNum, \"user\": 0});")
+    assert modifies_data(tree) == True
+    assert modifies_structure(tree) == False
+
