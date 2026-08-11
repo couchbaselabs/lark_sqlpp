@@ -2,6 +2,7 @@ from lark import Lark
 from lark_sqlpp.collection_extractor import CollectionExtractor
 from lark_sqlpp.dml_checker import DmlChecker
 from lark_sqlpp.ddl_checker import DdlChecker
+from lark_sqlpp.dcl_checker import DclChecker
 import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -40,3 +41,11 @@ def modifies_structure(parsed_tree):
     :return: True or False
     """
     return DdlChecker(parsed_tree).check()
+
+def modifies_privileges(parsed_tree):
+    """
+    Checks if the tree contains a privilege modification query (GRANT/REVOKE)
+    :param parsed_tree:
+    :return: True or False
+    """
+    return DclChecker(parsed_tree).check()

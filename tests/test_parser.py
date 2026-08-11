@@ -1,5 +1,5 @@
 from exceptiongroup import catch
-from lark_sqlpp import parse_sqlpp, extract_collections, modifies_data, modifies_structure
+from lark_sqlpp import parse_sqlpp, extract_collections, modifies_data, modifies_structure, modifies_privileges
 
 
 def test_parser():
@@ -41,6 +41,32 @@ def test_modifies_structure():
 
     tree = parse_sqlpp("CREATE SCOPE test.scope IF NOT EXISTS")
     assert modifies_structure(tree) == True
+
+def test_modifies_privileges():
+    tree = parse_sqlpp("SELECT * from bucket.scope.collection")
+    assert modifies_privileges(tree) == False
+
+    tree = parse_sqlpp("DELETE from bucket.scope.collection")
+    assert modifies_privileges(tree) == False
+
+    tree = parse_sqlpp("CREATE SCOPE test.scope IF NOT EXISTS")
+    assert modifies_privileges(tree) == False
+
+    tree = parse_sqlpp("GRANT bucket_full_access ON bucket TO alice")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+    assert modifies_privileges(tree) == True
+
+    tree = parse_sqlpp("REVOKE bucket_full_access ON bucket FROM alice")
+    assert modifies_data(tree) == False
+    assert modifies_structure(tree) == False
+    assert modifies_privileges(tree) == True
+
+    tree = parse_sqlpp("GRANT query_select, query_insert TO alice, bob")
+    assert modifies_privileges(tree) == True
+
+    tree = parse_sqlpp("EXPLAIN GRANT bucket_full_access ON bucket TO alice")
+    assert modifies_privileges(tree) == True
 
 def test_explain():
     tree = parse_sqlpp("EXPLAIN SELECT * from bucket.scope.collection")
