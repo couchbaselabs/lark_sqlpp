@@ -5,9 +5,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "lark_sqlpp"
-version = "0.2.2"
+version = "0.3"
 authors = [
     { name="Dmitrii Chechetkin", email="dmitrii.chechetkin@couchbase.com" },
+    { name="Sanjana Boggram J", email="sanjana.jagadeesh@couchbase.com" },
 ]
 description = "A package containing lark grammar and parser method for sqlpp"
 readme = "README.md"
