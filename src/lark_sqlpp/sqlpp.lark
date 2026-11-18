@@ -529,6 +529,7 @@ expr: ( \
             | new_array_expr
             | ( LPAREN expr RPAREN )
             | exists_expr
+            | not_expr
             | subquery_expr
             | collection_transform_expr
             | sequence_value_expr \
@@ -784,7 +785,7 @@ is_expr: "IS"i "NOT"i? ( "NULL"i | "MISSING"i | "VALUED"i )
 
 concatenation_term: "||" expr
 
-logical_term: and_expr | or_expr | not_expr
+logical_term: and_expr | or_expr
 
 and_expr: "AND"i cond
 
