@@ -156,6 +156,84 @@ def test_infix_not_rejected():
         with pytest.raises(UnexpectedInput):
             parse_sqlpp(query)
 
+def test_unary_minus():
+    for query in [
+        "SELECT -1",
+        "SELECT -1.5",
+        "SELECT -h.x FROM h",
+        "SELECT [-1, 2]",
+        "SELECT 1 - -1",
+        "SELECT * FROM h WHERE h.x > -1",
+        "SELECT a.airportname, a.city, a.geo.lon FROM `travel-sample`.inventory.airport a"
+        " WHERE a.geo.lon < -150 ORDER BY a.geo.lon LIMIT 5;",
+        "SELECT h.name, h.public_likes[-1] AS last_like FROM `travel-sample`.inventory.hotel h"
+        " WHERE ARRAY_LENGTH(h.public_likes) > 0 LIMIT 3;",
+        'CREATE SEQUENCE seq4 IF NOT EXISTS WITH {"start": 10, "increment": -1, "min": 0};',
+    ]:
+        parse_sqlpp(query)
+
+    tree = parse_sqlpp("SELECT 0 - 1")
+    assert len(list(tree.find_data("arithmetic_term"))) == 1
+    assert len(list(tree.find_data("neg_expr"))) == 0
+
+def test_string_literals():
+    def strings(tree):
+        return [str(t.children[0]) for t in tree.find_data("double_quoted_string")] + \
+               [str(t.children[0]) for t in tree.find_data("single_quoted_string")]
+
+    tree = parse_sqlpp('SELECT * FROM h WHERE h.x = "a" AND h.y = "b"')
+    assert sorted(strings(tree)) == ['"a"', '"b"']
+
+    for query, expected in [
+        ('SELECT "say \\"hi\\""', '"say \\"hi\\""'),
+        ("SELECT 'it''s'", "'it''s'"),
+        ("SELECT 'it\\'s'", "'it\\'s'"),
+        ('SELECT "back\\\\slash"', '"back\\\\slash"'),
+        ('SELECT "\\u00e9 \\n \\t"', '"\\u00e9 \\n \\t"'),
+        ('SELECT "line1\nline2"', '"line1\nline2"'),
+        ('SELECT "a; DELETE FROM b"', '"a; DELETE FROM b"'),
+        ('SELECT "it\'s"', '"it\'s"'),
+        ('SELECT \'say "hi"\'', '\'say "hi"\''),
+        ('SELECT ""', '""'),
+    ]:
+        assert strings(parse_sqlpp(query)) == [expected]
+
+    tree = parse_sqlpp('SELECT * FROM h WHERE h.x = "a; DELETE FROM b"')
+    assert modifies_data(tree) == False
+
+    with pytest.raises(UnexpectedInput):
+        parse_sqlpp('SELECT "unterminated')
+
+    # Couchbase: syntax error (3000), the string ends at the second quote.
+    with pytest.raises(UnexpectedInput):
+        parse_sqlpp('SELECT "say ""hi"""')
+
+def test_string_cannot_hide_statements():
+    # A string ends at its first unescaped quote, so text the grammar can't parse
+    # fails the whole parse instead of being absorbed into one long string.
+    for query in [
+        'SELECT "a"; SELECT [ADD VECTOR HERE]; SELECT "b"',
+        'SELECT * FROM h WHERE h.x = "a" AND h.y = [ADD VECTOR HERE] AND h.z = "b"',
+        "SELECT 'a'; SELECT [ADD VECTOR HERE]; SELECT 'b'",
+    ]:
+        with pytest.raises(UnexpectedInput):
+            parse_sqlpp(query)
+
+    tree = parse_sqlpp('SELECT "a"; DELETE FROM b WHERE c = "d"; SELECT "e"')
+    assert len(list(tree.find_data("statement"))) == 3
+    assert modifies_data(tree) == True
+
+    tree = parse_sqlpp('SELECT "a"; GRANT bucket_full_access ON bucket TO alice; SELECT "b"')
+    assert modifies_privileges(tree) == True
+
+def test_tests_file_parses_every_statement():
+    # Guards against a string literal (or anything else) swallowing part of tests.sqlpp.
+    # Every statement in the file ends with ";" at the end of a line.
+    source = open("tests/tests.sqlpp").read()
+    expected = sum(1 for line in source.splitlines() if line.rstrip().endswith(";"))
+    tree = parse_sqlpp(source)
+    assert len(list(tree.find_data("statement"))) == expected
+
 def test_slice_expr():
     tree = parse_sqlpp("SELECT h.name, h.public_likes[0:2] AS top_likes FROM hotel AS h WHERE h.public_likes IS NOT MISSING LIMIT 5;")
     assert modifies_data(tree) == False
