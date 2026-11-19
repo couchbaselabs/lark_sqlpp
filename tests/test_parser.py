@@ -1,4 +1,6 @@
 from exceptiongroup import catch
+import pytest
+from lark.exceptions import UnexpectedInput
 from lark_sqlpp import parse_sqlpp, extract_collections, modifies_data, modifies_structure, modifies_privileges
 
 
@@ -99,6 +101,60 @@ def test_where_exists():
     tree = parse_sqlpp("SELECT DISTINCT h.city FROM hotel AS h WHERE EXISTS h.reviews;")
     assert modifies_data(tree) == False
     assert modifies_structure(tree) == False
+
+def test_prefix_not():
+    for query in [
+        "SELECT * FROM h WHERE NOT EXISTS (SELECT 1 FROM a)",
+        "SELECT * FROM h WHERE h.a = 1 AND NOT EXISTS (SELECT 1 FROM a)",
+        "SELECT * FROM h WHERE NOT EXISTS h.reviews",
+        "SELECT * FROM h WHERE NOT h.free_parking",
+        "SELECT * FROM h WHERE NOT (EXISTS (SELECT 1 FROM a))",
+        "SELECT * FROM h WHERE NOT (h.x = 1)",
+        "SELECT * FROM h WHERE h.a = 1 AND NOT h.b",
+        "SELECT * FROM h WHERE h.a = 1 OR NOT h.b",
+        "SELECT NOT h.a FROM h",
+        # Also in tests.sqlpp, where a string literal currently swallows it unparsed.
+        "SELECT meta(TMP).id FROM `ga_profiles` as TMP WHERE NOT EXISTS ("
+        " SELECT RAW META(GA).id FROM `tempga_profiles` as GA WHERE META(GA).id = META(TMP).id)"
+        " AND meta(TMP).cas <= 1699077903000000000;",
+    ]:
+        tree = parse_sqlpp(query)
+        assert modifies_data(tree) == False
+        assert modifies_structure(tree) == False
+        assert modifies_privileges(tree) == False
+
+    tree = parse_sqlpp("DELETE FROM h WHERE NOT EXISTS (SELECT 1 FROM a)")
+    assert modifies_data(tree) == True
+
+    tree = parse_sqlpp("UPDATE h SET x = 1 WHERE NOT EXISTS (SELECT 1 FROM a)")
+    assert modifies_data(tree) == True
+
+def test_infix_not_operators():
+    for query in [
+        "SELECT * FROM h WHERE h.city NOT IN ['a', 'b']",
+        "SELECT * FROM h WHERE h.city NOT WITHIN ['a', 'b']",
+        "SELECT * FROM h WHERE h.name NOT LIKE 'a%'",
+        "SELECT * FROM h WHERE h.n NOT BETWEEN 1 AND 2",
+        "SELECT * FROM h WHERE h.n IS NOT NULL",
+        "SELECT * FROM h WHERE h.n IS NOT MISSING",
+    ]:
+        parse_sqlpp(query)
+
+    tree = parse_sqlpp("SELECT * FROM h WHERE h.city NOT IN ['a', 'b']")
+    assert len(list(tree.find_data("in_expr"))) == 1
+    assert len(list(tree.find_data("not_expr"))) == 0
+
+    tree = parse_sqlpp("SELECT * FROM h WHERE h.city NOT WITHIN ['a', 'b']")
+    assert len(list(tree.find_data("within_expr"))) == 1
+    assert len(list(tree.find_data("not_expr"))) == 0
+
+def test_infix_not_rejected():
+    for query in [
+        "SELECT * FROM h WHERE h.a NOT h.b",
+        "SELECT * FROM h WHERE h.a = 1 NOT h.b = 2",
+    ]:
+        with pytest.raises(UnexpectedInput):
+            parse_sqlpp(query)
 
 def test_slice_expr():
     tree = parse_sqlpp("SELECT h.name, h.public_likes[0:2] AS top_likes FROM hotel AS h WHERE h.public_likes IS NOT MISSING LIMIT 5;")
