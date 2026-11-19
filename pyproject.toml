@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "lark_sqlpp"
-version = "0.3"
+version = "0.3.1"
 authors = [
     { name="Dmitrii Chechetkin", email="dmitrii.chechetkin@couchbase.com" },
     { name="Sanjana Boggram J", email="sanjana.jagadeesh@couchbase.com" },
