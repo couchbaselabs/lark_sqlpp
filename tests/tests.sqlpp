@@ -9,7 +9,7 @@ AND SEARCH(v1,
       "knn": [
          {
             "field": "Review_Vector",
-            "vector": [ADD VECTOR HERE],
+            "vector": [0.12, 0.34, 0.56],
             "k": 3
          }
       ]
