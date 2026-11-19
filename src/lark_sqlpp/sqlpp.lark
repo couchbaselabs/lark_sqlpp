@@ -530,6 +530,7 @@ expr: ( \
             | ( LPAREN expr RPAREN )
             | exists_expr
             | not_expr
+            | neg_expr
             | subquery_expr
             | collection_transform_expr
             | sequence_value_expr \
@@ -550,17 +551,17 @@ digit: "0".."9"
 
 str: double_quoted_string | single_quoted_string
 
-double_quoted_string: "\"" double_quoted_string_character* "\""
+double_quoted_string: DOUBLE_QUOTED_STRING
 
-single_quoted_string: "'" single_quoted_string_character* "'"
+single_quoted_string: SINGLE_QUOTED_STRING
 
-double_quoted_string_character: ( escape_sequence | "\\\"" | string_char )
+// A string literal is a single token, so it always ends at the first unescaped quote
+// and can't absorb text the parser otherwise fails on. Contents: a backslash escape
+// or any other character (newlines included). Couchbase rejects "" inside a
+// double-quoted string, so a doubled quote isn't an escape here.
+DOUBLE_QUOTED_STRING: /"(\\[\s\S]|[^"\\])*"/
 
-single_quoted_string_character: ( escape_sequence | "\\'" | string_char )
-
-escape_sequence: /\\[nrt\\]/ | /\\u[0-9a-fA-F]{4}/
-
-string_char: /./
+SINGLE_QUOTED_STRING: /'(\\[\s\S]|''|[^'\\])*'/
 
 bool: "TRUE"i | "FALSE"i
 
@@ -782,6 +783,8 @@ between_expr: "NOT"i? "BETWEEN"i expr "AND"i expr
 like_expr: "NOT"i? "LIKE"i expr
 
 is_expr: "IS"i "NOT"i? ( "NULL"i | "MISSING"i | "VALUED"i )
+
+neg_expr: "-" expr
 
 concatenation_term: "||" expr
 
